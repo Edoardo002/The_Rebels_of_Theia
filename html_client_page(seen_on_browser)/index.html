@@ -583,8 +583,24 @@
           contract = new web3.eth.Contract(ABI, ADDRESS);
           
           document.getElementById('mint-btn').onclick = () => {
-            contract.methods.safeMint(account).send({ from: account, value: "40000000000000000"});
-          }
+            transaction = contract.methods.createCollectible("None").send({ from: account, value: "40000000000000000"});
+			transaction.wait(1);
+    		time.sleep(35);
+    		requestId = transaction.events["requestedCollectible"]["requestId"];
+    		token_id = contract.requestIdToTokenId(requestId);
+    		BACKGROUND = contract.tokenIdToBACKGROUND(token_id);
+			CORE = contract.tokenIdToCORE(token_id);
+			TAIL = contract.tokenIdToTAIL(token_id);
+			RIGHT_WING = contract.tokenIdToRIGHT_WING(token_id);
+			LEFT_WING = contract.tokenIdToLEFT_WING(token_id);
+			ENGINE = contract.tokenIdToENGINE(token_id);
+			WEAPONS = contract.tokenIdToWEAPONS(token_id);
+			tid = BACKGROUND.concat(CORE,TAIL,RIGHT_WING,LEFT_WING,ENGINE,WEAPONS);
+			token_png_URI = "baseipfsURI"+tid;
+			metadata = get_md(tid); //create metadata file through metadata server (send tid as input so that the "image" field of metadata will be token_png_URI) (GET)
+			json_blob_URI = pin(metadata); //upload metadata file on Pinata and wait for the (json)URI response, again with metadata server (POST)
+			contract.setTokenURI(token_id, json_blob_URI).send({ from: dev });
+          	}
           }
         })();
     </script>
